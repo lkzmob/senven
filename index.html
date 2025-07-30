@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多维数字筛选工具 - 增强版</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            background: rgba(0, 20, 40, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(0, 150, 255, 0.7);
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+            color: #e0f7fa;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr;
+            gap: 25px;
+        }
+        
+        .controls-panel, .results-panel, .reference-table {
+            background: rgba(10, 25, 47, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .controls-panel:hover, .results-panel:hover, .reference-table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .panel-title {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            color: #4fc3f7;
+            display: flex;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .panel-title i {
+            margin-right: 12px;
+            font-size: 1.6rem;
+            color: #4fc3f7;
+        }
+        
+        .filter-section {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 18px;
+            color: #81d4fa;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .option-btn {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            color: #e0f7fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
+        }
+        
+        .option-btn.selected {
+            background: #2196f3;
+            border-color: #2196f3;
+            font-weight: bold;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.45);
+        }
+        
+        .color-btn.red { background: rgba(244, 67, 54, 0.3); }
+        .color-btn.red.selected { background: #f44336; }
+        
+        .color-btn.green { background: rgba(76, 175, 80, 0.3); }
+        .color-btn.green.selected { background: #4caf50; }
+        
+        .color-btn.blue { background: rgba(33, 150, 243, 0.3); }
+        .color-btn.blue.selected { background: #2196f3; }
+        
+        .input-group {
+            margin-bottom: 18px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+            opacity: 0.9;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.25);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 18px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 16px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #2196f3, #21d4fd);
+            color: white;
+            box-shadow: 0 6px 18px rgba(33, 150, 243, 0.5);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(33, 150, 243, 0.7);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            box-shadow: 0 6px 18px rgba(76, 175, 80, 0.5);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(76, 175, 80, 0.7);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(45deg, #9C27B0, #673AB7);
+            color: white;
+            box-shadow: 0 6px 18px rgba(156, 39, 176, 0.5);
+        }
+        
+        .btn-purple:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(156, 39, 176, 0.7);
+        }
+        
+        .results-container {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 28px;
+        }
+        
+        .stat-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 22px;
+            margin-bottom: 28px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 40, 80, 0.6);
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-7px);
+            background: rgba(0, 60, 120, 0.7);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .red-value { color: #ff5252; }
+        .green-value { color: #69f0ae; }
+        .blue-value { color: #40c4ff; }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 14px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0, 20, 40, 0.5);
+        }
+        
+        .result-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-item:hover {
+            transform: scale(1.15) rotate(5deg);
+            z-index: 10;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .result-item.red { 
+            background: linear-gradient(135deg, #ff5252, #ff1744); 
+        }
+        .result-item.green { 
+            background: linear-gradient(135deg, #69f0ae, #00e676); 
+        }
+        .result-item.blue { 
+            background: linear-gradient(135deg, #40c4ff, #2979ff); 
+        }
+        
+        .result-item .zodiac {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            font-size: 0.75rem;
+            opacity: 0.9;
+            font-weight: normal;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        
+        th {
+            background: rgba(0, 60, 120, 0.6);
+            color: #81d4fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        tr:hover {
+            background: rgba(33, 150, 243, 0.2);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .red-legend { background: #ff5252; }
+        .green-legend { background: #69f0ae; }
+        .blue-legend { background: #40c4ff; }
+        
+        /* 新功能样式 */
+        .odd-even-filter, .size-filter {
+            margin-bottom: 20px;
+        }
+        
+        .custom-filter-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 25, 47, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            display: none;
+        }
+        
+        .custom-filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .custom-filter-title {
+            font-size: 24px;
+            color: #4fc3f7;
+        }
+        
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #ff5252;
+            transform: scale(1.1);
+        }
+        
+        .custom-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .custom-group {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .custom-group h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #81d4fa;
+        }
+        
+        .custom-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .animal-detail-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 25, 47, 0.97);
+            border-radius: 15px;
+            padding: 30px;
+            width: 95%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            display: none;
+        }
+        
+        .animal-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .animal-category {
+            background: rgba(0, 40, 80, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .animal-category:hover {
+            background: rgba(0, 60, 120, 0.7);
+            transform: translateY(-3px);
+        }
+        
+        .animal-category h3 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #4fc3f7;
+        }
+        
+        .animal-category .animals {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .animal-tag {
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .animal-tag.selected {
+            background: #2196f3;
+            font-weight: bold;
+        }
+        
+        .copy-btn {
+            margin-top: 20px;
+            background: linear-gradient(45deg, #FF9800, #FF5722);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(255, 87, 34, 0.4);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .custom-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .stat-boxes {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+        }
+        
+        .debug-info {
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        
+        .debug-title {
+            margin-bottom: 8px;
+            color: #ff5252;
+            display: flex;
+            align-items: center;
+        }
+        
+        .debug-title i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- 自定义筛选面板 -->
+    <div class="custom-filter-panel" id="custom-filter-panel">
+        <div class="custom-filter-header">
+            <h2 class="custom-filter-title"><i class="fas fa-filter"></i> 自定义筛选面板</h2>
+            <button class="close-btn" id="close-custom-panel"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="custom-controls">
+            <div class="custom-group">
+                <h3>数字输入</h3>
+                <input type="text" class="custom-input" id="custom-numbers" placeholder="输入数字（逗号分隔）">
+            </div>
+            
+            <div class="custom-group">
+                <h3>生肖选择</h3>
+                <input type="text" class="custom-input" id="custom-animals" placeholder="输入生肖（逗号分隔）">
+            </div>
+            
+            <div class="custom-group">
+                <h3>五行选择</h3>
+                <input type="text" class="custom-input" id="custom-elements" placeholder="输入五行（逗号分隔）">
+            </div>
+            
+            <div class="custom-group">
+                <h3>波色选择</h3>
+                <input type="text" class="custom-input" id="custom-colors" placeholder="输入波色（红、绿、蓝）">
+            </div>
+        </div>
+        
+        <button class="btn btn-success" id="apply-custom-filter">
+            <i class="fas fa-check-circle"></i> 应用自定义筛选
+        </button>
+    </div>
+    
+    <!-- 生肖详情面板 -->
+    <div class="animal-detail-modal" id="animal-detail-modal">
+        <div class="custom-filter-header">
+            <h2 class="custom-filter-title"><i class="fas fa-cat"></i> 生肖详情分类</h2>
+            <button class="close-btn" id="close-animal-panel"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="animal-categories">
+            <!-- 生肖分类将通过JS动态生成 -->
+        </div>
+        
+        <button class="btn btn-purple" id="apply-animal-filter" style="margin-top: 30px;">
+            <i class="fas fa-filter"></i> 应用生肖分类筛选
+        </button>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-filter"></i> 多维数字筛选工具 - 增强版</h1>
+            <p class="subtitle">集生肖、五行、波色、单双、大小等全面筛选功能于一体的高级分析工具</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- 控制面板 -->
+            <div class="controls-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> 筛选条件设置</h2>
+                
+                <!-- 数字头尾筛选 -->
+                <div class="filter-section">
+                    <h3 class="section-title"><i class="fas fa-heading"></i> 数字筛选</h3>
+                    <div class="input-group">
+                        <label for="head-input">头部数字（直接输入如：1230,注:0头的数字必须放在最后面）</label>
+                        <input type="text" id="head-input" placeholder="头部:点击此处输入">
+                    </div>
+                    <div class="input-group">
+                        <label for="tail-input">尾部数字（直接输入如：654或者6,5,4）</label>
+                        <input type="text" id="tail-input" placeholder="尾部:点击此处输入">
+                    </div>
+                </div>
+                
+                <!-- 单双数筛选 -->
+                <div class="filter-section odd-even-filter">
+                    <h3 class="section-title"><i class="fas fa-dice"></i> 单双数筛选</h3>
+                    <div class="filter-options">
+                        <div class="option-btn" data-type="odd" data-value="单">单数</div>
+                        <div class="option-btn" data-type="odd" data-value="双">双数</div>
+                        <div class="option-btn" data-type="odd" data-value="all">全部</div>
+                    </div>
+                </div>
+                
+                <!-- 大小筛选 -->
+                <div class="filter-section size-filter">
+                    <h3 class="section-title"><i class="fas fa-expand-alt"></i> 大小筛选</h3>
+                    <div class="filter-options">
+                        <div class="option-btn" data-type="size" data-value="小">小 (1-24)</div>
+                        <div class="option-btn" data-type="size" data-value="大">大 (25-49)</div>
+                        <div class="option-btn" data-type="size" data-value="all">全部</div>
+                    </div>
+                </div>
+                
+                <!-- 颜色筛选 -->
+                <div class="filter-section" id="color-filter">
+                    <h3 class="section-title"><i class="fas fa-palette"></i> 颜色筛选</h3>
+                    <div class="filter-options">
+                        <div class="option-btn color-btn red" data-value="红">红波</div>
+                        <div class="option-btn color-btn green" data-value="绿">绿波</div>
+                        <div class="option-btn color-btn blue" data-value="蓝">蓝波</div>
+                    </div>
+                </div>
+                
+                <!-- 生肖筛选 -->
+                <div class="filter-section" id="animal-filter">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="section-title"><i class="fas fa-paw"></i> 生肖筛选</h3>
+                        <button class="btn btn-purple" id="show-animal-detail" style="padding: 8px 15px; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> 生肖详情
+                        </button>
+                    </div>
+                    <div class="filter-options">
+                        <div class="option-btn" data-value="鼠">鼠</div>
+                        <div class="option-btn" data-value="牛">牛</div>
+                        <div class="option-btn" data-value="虎">虎</div>
+                        <div class="option-btn" data-value="兔">兔</div>
+                        <div class="option-btn" data-value="龙">龙</div>
+                        <div class="option-btn" data-value="蛇">蛇</div>
+                        <div class="option-btn" data-value="马">马</div>
+                        <div class="option-btn" data-value="羊">羊</div>
+                        <div class="option-btn" data-value="猴">猴</div>
+                        <div class="option-btn" data-value="鸡">鸡</div>
+                        <div class="option-btn" data-value="狗">狗</div>
+                        <div class="option-btn" data-value="猪">猪</div>
+                    </div>
+                </div>
+                
+                <!-- 五行筛选 -->
+                <div class="filter-section" id="element-filter">
+                    <h3 class="section-title"><i class="fas fa-yin-yang"></i> 五行筛选</h3>
+                    <div class="filter-options">
+                        <div class="option-btn" data-value="金">金</div>
+                        <div class="option-btn" data-value="木">木</div>
+                        <div class="option-btn" data-value="水">水</div>
+                        <div class="option-btn" data-value="火">火</div>
+                        <div class="option-btn" data-value="土">土</div>
+                    </div>
+                </div>
+                
+                <!-- 排除特定数字 -->
+                <div class="filter-section">
+                    <h3 class="section-title"><i class="fas fa-ban"></i> 排除数字</h3>
+                    <div class="input-group">
+                        <label for="exclude-input">输入要排除的数字（逗号分隔）</label>
+                        <input type="text" id="exclude-input" placeholder="例如: 15,22,37">
+                    </div>
+                </div>
+                
+                <!-- 特定数字筛选 -->
+                <div class="filter-section">
+                    <h3 class="section-title"><i class="fas fa-star"></i> 特定数字集</h3>
+                    <div class="input-group">
+                        <label for="specific-input">输入特定数字集（逗号分隔范围）注:如不是范围直接用逗号分隔个数</label>
+                        <input type="text" id="specific-input" placeholder="例如: 19-27,28-37">
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="filter-btn"><i class="fas fa-filter"></i> 应用筛选</button>
+                    <button class="btn btn-secondary" id="reset-btn"><i class="fas fa-redo"></i> 重置条件</button>
+                    <button class="btn btn-success" id="custom-filter-btn"><i class="fas fa-cogs"></i> 自定义筛选</button>
+                </div>
+                
+                <!-- 调试信息 -->
+                <div class="debug-info">
+                    <div class="debug-title"><i class="fas fa-bug"></i> 调试信息</div>
+                    <div id="debug-output">等待筛选操作...</div>
+                </div>
+            </div>
+            
+            <!-- 结果面板 -->
+            <div class="results-container">
+                <!-- 统计结果 -->
+                <div class="results-panel">
+                    <h2 class="panel-title"><i class="fas fa-chart-bar"></i> 筛选结果</h2>
+                    
+                    <div class="stat-boxes">
+                        <div class="stat-box">
+                            <div>匹配总数</div>
+                            <div class="stat-value" id="total-count">0</div>
+                            <div>个数字</div>
+                        </div>
+                        <div class="stat-box">
+                            <div>红波数量</div>
+                            <div class="stat-value red-value" id="red-count">0</div>
+                            <div>个数字</div>
+                        </div>
+                        <div class="stat-box">
+                            <div>绿波数量</div>
+                            <div class="stat-value green-value" id="green-count">0</div>
+                            <div>个数字</div>
+                        </div>
+                        <div class="stat-box">
+                            <div>蓝波数量</div>
+                            <div class="stat-value blue-value" id="blue-count">0</div>
+                            <div>个数字</div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-grid" id="results-grid">
+                        <!-- 结果将通过JS动态填充 -->
+                    </div>
+                    
+                    <button class="copy-btn" id="copy-results">
+                        <i class="fas fa-copy"></i> 复制筛选结果
+                    </button>
+                </div>
+                
+                <!-- 对照表 -->
+                <div class="reference-table">
+                    <h2 class="panel-title"><i class="fas fa-table"></i> 数字属性对照表</h2>
+                    
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>数字</th>
+                                    <th>生肖</th>
+                                    <th>五行</th>
+                                    <th>颜色</th>
+                                    <th>单双</th>
+                                    <th>大小</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reference-body">
+                                <!-- 表格内容将通过JS动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color red-legend"></div>
+                            <span>红波</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color green-legend"></div>
+                            <span>绿波</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color blue-legend"></div>
+                            <span>蓝波</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数字数据
+        const numberData = [
+            // 鼠
+            {num: 6, animal: '鼠', color: '绿', element: '土'},
+            {num: 18, animal: '鼠', color: '红', element: '火'},
+            {num: 30, animal: '鼠', color: '红', element: '水'},
+            {num: 42, animal: '鼠', color: '蓝', element: '金'},
+            
+            // 牛
+            {num: 5, animal: '牛', color: '绿', element: '土'},
+            {num: 17, animal: '牛', color: '绿', element: '火'},
+            {num: 29, animal: '牛', color: '红', element: '水'},
+            {num: 41, animal: '牛', color: '蓝', element: '金'},
+            
+            // 虎
+            {num: 4, animal: '虎', color: '蓝', element: '金'},
+            {num: 16, animal: '虎', color: '绿', element: '木'},
+            {num: 28, animal: '虎', color: '绿', element: '土'},
+            {num: 40, animal: '虎', color: '红', element: '火'},
+            
+            // 兔
+            {num: 3, animal: '兔', color: '蓝', element: '金'},
+            {num: 15, animal: '兔', color: '蓝', element: '木'},
+            {num: 27, animal: '兔', color: '绿', element: '土'},
+            {num: 39, animal: '兔', color: '绿', element: '火'},
+            
+            // 龙
+            {num: 2, animal: '龙', color: '红', element: '火'},
+            {num: 14, animal: '龙', color: '蓝', element: '水'},
+            {num: 26, animal: '龙', color: '蓝', element: '金'},
+            {num: 38, animal: '龙', color: '绿', element: '木'},
+            
+            // 蛇
+            {num: 1, animal: '蛇', color: '红', element: '火'},
+            {num: 13, animal: '蛇', color: '红', element: '水'},
+            {num: 25, animal: '蛇', color: '蓝', element: '金'},
+            {num: 37, animal: '蛇', color: '蓝', element: '木'},
+            {num: 49, animal: '蛇', color: '绿', element: '土'},
+            
+            // 马
+            {num: 12, animal: '马', color: '红', element: '金'},
+            {num: 24, animal: '马', color: '红', element: '木'},
+            {num: 36, animal: '马', color: '蓝', element: '土'},
+            {num: 48, animal: '马', color: '蓝', element: '火'},
+            
+            // 羊
+            {num: 11, animal: '羊', color: '绿', element: '金'},
+            {num: 23, animal: '羊', color: '红', element: '木'},
+            {num: 35, animal: '羊', color: '红', element: '土'},
+            {num: 47, animal: '羊', color: '蓝', element: '火'},
+            
+            // 猴
+            {num: 10, animal: '猴', color: '蓝', element: '火'},
+            {num: 22, animal: '猴', color: '绿', element: '水'},
+            {num: 34, animal: '猴', color: '红', element: '金'},
+            {num: 46, animal: '猴', color: '红', element: '木'},
+            
+            // 鸡
+            {num: 9, animal: '鸡', color: '蓝', element: '火'},
+            {num: 21, animal: '鸡', color: '绿', element: '水'},
+            {num: 33, animal: '鸡', color: '绿', element: '金'},
+            {num: 45, animal: '鸡', color: '红', element: '木'},
+            
+            // 狗
+            {num: 8, animal: '狗', color: '红', element: '木'},
+            {num: 20, animal: '狗', color: '蓝', element: '土'},
+            {num: 32, animal: '狗', color: '绿', element: '火'},
+            {num: 44, animal: '狗', color: '绿', element: '水'},
+            
+            // 猪
+            {num: 7, animal: '猪', color: '红', element: '土'},
+            {num: 19, animal: '猪', color: '红', element: '木'},
+            {num: 31, animal: '猪', color: '蓝', element: '火'},
+            {num: 43, animal: '猪', color: '绿', element: '水'}
+        ];
+
+        // 生肖分类数据
+        const animalCategories = [
+            { title: "家肖", animals: ["牛", "马", "羊", "鸡", "狗", "猪"] },
+            { title: "野肖", animals: ["鼠", "虎", "兔", "龙", "蛇", "猴"] },
+            { title: "男肖", animals: ["鼠", "牛", "虎", "龙", "马", "猴", "狗"] },
+            { title: "女肖", animals: ["兔", "蛇", "羊", "鸡", "猪"] },
+            { title: "吉美肖", animals: ["兔", "龙", "蛇", "马", "羊", "鸡"] },
+            { title: "凶丑肖", animals: ["鼠", "牛", "虎", "猴", "狗", "猪"] },
+            { title: "【琴】", animals: ["兔", "蛇", "鸡"] },
+            { title: "【棋】", animals: ["鼠", "牛", "狗"] },
+            { title: "【书】", animals: ["虎", "龙", "马"] },
+            { title: "【画】", animals: ["羊", "猴", "猪"] },
+            { title: "白色生肖", animals: ["鼠", "牛", "虎", "鸡", "狗", "猪"] },
+            { title: "黑色生肖", animals: ["兔", "龙", "蛇", "马", "羊", "猴"] },
+            { title: "金肖", animals: ["猴", "鸡"] },
+            { title: "木肖", animals: ["虎", "兔"] },
+            { title: "水肖", animals: ["鼠", "猪"] },
+            { title: "火肖", animals: ["蛇", "马"] },
+            { title: "土肖", animals: ["牛", "龙", "羊", "狗"] },
+            { title: "左肖", animals: ["鼠", "牛", "龙", "蛇", "猴", "鸡"] },
+            { title: "右肖", animals: ["虎", "兔", "马", "羊", "狗", "猪"] },
+            { title: "前肖", animals: ["鼠", "牛", "虎", "兔", "龙", "蛇"] },
+            { title: "后肖", animals: ["马", "羊", "猴", "鸡", "狗", "猪"] },
+            { title: "大肖", animals: ["牛", "虎", "马", "羊", "狗", "猪"] },
+            { title: "小肖", animals: ["鼠", "兔", "龙", "蛇", "猴", "鸡"] },
+            { title: "春东风肖", animals: ["兔", "虎", "龙"] },
+            { title: "夏南雷肖", animals: ["马", "蛇", "羊"] },
+            { title: "秋西云肖", animals: ["鸡", "猴", "狗"] },
+            { title: "冬北雨肖", animals: ["鼠", "牛", "猪"] },
+            { title: "日肖", animals: ["兔", "龙", "蛇", "马", "羊", "猴"] },
+            { title: "夜肖", animals: ["鼠", "牛", "虎", "鸡", "狗", "猪"] },
+            { title: "胆大生肖", animals: ["牛", "虎", "马", "猴", "狗", "猪"] },
+            { title: "胆小生肖", animals: ["鼠", "兔", "龙", "蛇", "羊", "鸡"] }
+        ];
+
+        // 初始化函数
+        function init() {
+            // 添加单双数和大小属性
+            enhanceNumberData();
+            
+            // 渲染对照表
+            renderReferenceTable();
+            
+            // 添加事件监听器
+            setupEventListeners();
+            
+            // 初始加载时应用默认筛选
+            setDefaultFilters();
+            applyFilters();
+        }
+        
+        // 为数字数据添加单双和大小属性
+        function enhanceNumberData() {
+            numberData.forEach(item => {
+                // 单双数
+                item.oddEven = (item.num % 2 === 0) ? "双" : "单";
+                
+                // 大小
+                item.size = (item.num <= 24) ? "小" : "大";
+            });
+        }
+        
+        // 渲染对照表
+        function renderReferenceTable() {
+            const tbody = document.getElementById('reference-body');
+            tbody.innerHTML = '';
+            
+            numberData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // 数字格式化（两位数）
+                const numStr = item.num < 10 ? '0' + item.num : item.num;
+                
+                row.innerHTML = `
+                    <td>${numStr}</td>
+                    <td>${item.animal}</td>
+                    <td>${item.element}</td>
+                    <td>${item.color}波</td>
+                    <td>${item.oddEven}</td>
+                    <td>${item.size}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 设置默认筛选条件
+        function setDefaultFilters() {
+            document.getElementById('head-input').value = '';
+            document.getElementById('tail-input').value = '';
+            document.getElementById('specific-input').value = '';
+            
+            // 选择红绿波
+            document.querySelectorAll('#color-filter .option-btn.red, #color-filter .option-btn.green').forEach(btn => {
+                
+            });
+            
+            // 默认选择单数
+            document.querySelector('.odd-even-filter .option-btn[data-value="ALL"]').classList.add('selected');
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 筛选按钮
+            document.getElementById('filter-btn').addEventListener('click', applyFilters);
+            document.getElementById('reset-btn').addEventListener('click', resetFilters);
+            document.getElementById('custom-filter-btn').addEventListener('click', showCustomFilterPanel);
+            document.getElementById('copy-results').addEventListener('click', copyResults);
+            document.getElementById('show-animal-detail').addEventListener('click', showAnimalDetailPanel);
+            
+            // 自定义面板按钮
+            document.getElementById('close-custom-panel').addEventListener('click', closeCustomFilterPanel);
+            document.getElementById('apply-custom-filter').addEventListener('click', applyCustomFilter);
+            
+            // 生肖面板按钮
+            document.getElementById('close-animal-panel').addEventListener('click', closeAnimalDetailPanel);
+            document.getElementById('apply-animal-filter').addEventListener('click', applyAnimalFilter);
+            
+            // 为筛选选项添加点击事件
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 处理单选类型
+                    if (this.dataset.type) {
+                        const siblings = document.querySelectorAll(`.option-btn[data-type="${this.dataset.type}"]`);
+                        siblings.forEach(sib => sib.classList.remove('selected'));
+                    }
+                    
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+
+        // 更新调试信息
+        function updateDebugInfo(message) {
+            const debugOutput = document.getElementById('debug-output');
+            debugOutput.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+        }
+
+        // 显示自定义筛选面板
+        function showCustomFilterPanel() {
+            document.getElementById('custom-filter-panel').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+            updateDebugInfo("打开自定义筛选面板");
+        }
+        
+        // 关闭自定义筛选面板
+        function closeCustomFilterPanel() {
+            document.getElementById('custom-filter-panel').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+        
+        // 显示生肖详情面板
+        function showAnimalDetailPanel() {
+            const container = document.querySelector('.animal-categories');
+            container.innerHTML = '';
+            
+            // 生成生肖分类选项
+            animalCategories.forEach(category => {
+                const categoryEl = document.createElement('div');
+                categoryEl.className = 'animal-category';
+                
+                let animalsHtml = '';
+                category.animals.forEach(animal => {
+                    animalsHtml += `<div class="animal-tag" data-animal="${animal}">${animal}</div>`;
+                });
+                
+                categoryEl.innerHTML = `
+                    <h3><i class="fas fa-tag"></i> ${category.title}</h3>
+                    <div class="animals">${animalsHtml}</div>
+                `;
+                
+                categoryEl.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('animal-tag')) {
+                        e.target.classList.toggle('selected');
+                    }
+                });
+                
+                container.appendChild(categoryEl);
+            });
+            
+            document.getElementById('animal-detail-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+            updateDebugInfo("打开生肖详情面板");
+        }
+        
+        // 关闭生肖详情面板
+        function closeAnimalDetailPanel() {
+            document.getElementById('animal-detail-modal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+        
+        // 应用生肖分类筛选
+        function applyAnimalFilter() {
+            const selectedTags = document.querySelectorAll('.animal-tag.selected');
+            const selectedAnimals = Array.from(selectedTags).map(tag => tag.dataset.animal);
+            
+            // 去重
+            const uniqueAnimals = [...new Set(selectedAnimals)];
+            
+            if (uniqueAnimals.length === 0) {
+                updateDebugInfo("未选择任何生肖");
+                return;
+            }
+            
+            // 清除之前的生肖选择
+            document.querySelectorAll('#animal-filter .option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 选择对应的生肖
+            uniqueAnimals.forEach(animal => {
+                const btn = document.querySelector(`#animal-filter .option-btn[data-value="${animal}"]`);
+                if (btn) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // 关闭面板并应用筛选
+            closeAnimalDetailPanel();
+            applyFilters();
+            
+            updateDebugInfo(`应用生肖分类筛选: ${uniqueAnimals.join(', ')}`);
+        }
+        
+        // 应用自定义筛选
+        function applyCustomFilter() {
+            const numbers = document.getElementById('custom-numbers').value;
+            const animals = document.getElementById('custom-animals').value;
+            const elements = document.getElementById('custom-elements').value;
+            const colors = document.getElementById('custom-colors').value;
+            
+            // 清除之前的筛选
+            resetFilters(true);
+            
+            // 设置自定义数字
+            if (numbers.trim() !== '') {
+                document.getElementById('specific-input').value = numbers;
+            }
+            
+            // 设置自定义生肖
+            if (animals.trim() !== '') {
+                const animalArr = animals.split(/[,，]/);
+                animalArr.forEach(animal => {
+                    const btn = document.querySelector(`#animal-filter .option-btn[data-value="${animal.trim()}"]`);
+                    if (btn) {
+                        btn.classList.add('selected');
+                    }
+                });
+            }
+            
+            // 设置自定义五行
+            if (elements.trim() !== '') {
+                const elementArr = elements.split(/[,，]/);
+                elementArr.forEach(element => {
+                    const btn = document.querySelector(`#element-filter .option-btn[data-value="${element.trim()}"]`);
+                    if (btn) {
+                        btn.classList.add('selected');
+                    }
+                });
+            }
+            
+            // 设置自定义颜色
+            if (colors.trim() !== '') {
+                const colorArr = colors.split(/[,，]/);
+                colorArr.forEach(color => {
+                    const btn = document.querySelector(`#color-filter .option-btn[data-value="${color.trim()}"]`);
+                    if (btn) {
+                        btn.classList.add('selected');
+                    }
+                });
+            }
+            
+            // 应用筛选
+            applyFilters();
+            closeCustomFilterPanel();
+            updateDebugInfo("应用自定义筛选条件");
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            updateDebugInfo("开始应用筛选条件...");
+            
+            // 获取筛选条件
+            const headValues = parseInput(document.getElementById('head-input').value, true);
+            const tailValues = parseInput(document.getElementById('tail-input').value, true);
+            const excludeValues = parseInput(document.getElementById('exclude-input').value);
+            const specificInput = document.getElementById('specific-input').value;
+            
+            // 获取选中的单双数
+            const selectedOddEven = document.querySelector('.odd-even-filter .option-btn.selected');
+            const oddEvenValue = selectedOddEven ? selectedOddEven.dataset.value : null;
+            
+            // 获取选中的大小
+            const selectedSize = document.querySelector('.size-filter .option-btn.selected');
+            const sizeValue = selectedSize ? selectedSize.dataset.value : null;
+            
+            // 获取选中的颜色
+            const selectedColors = Array.from(document.querySelectorAll('#color-filter .option-btn.selected'))
+                .map(btn => btn.dataset.value);
+                
+            // 获取选中的生肖
+            const selectedAnimals = Array.from(document.querySelectorAll('#animal-filter .option-btn.selected'))
+                .map(btn => btn.dataset.value);
+                
+            // 获取选中的五行
+            const selectedElements = Array.from(document.querySelectorAll('#element-filter .option-btn.selected'))
+                .map(btn => btn.dataset.value);
+            
+            // 处理特定数字集
+            let specificNumbers = [];
+            if (specificInput.trim() !== '') {
+                // 处理数字范围（如19-20-21...）
+                specificInput.split(',').forEach(range => {
+                    if (range.includes('-')) {
+                        const parts = range.split('-').filter(p => p !== '');
+                        if (parts.length >= 2) {
+                            const start = parseInt(parts[0]);
+                            const end = parseInt(parts[parts.length - 1]);
+                            for (let i = start; i <= end; i++) {
+                                specificNumbers.push(i);
+                            }
+                        }
+                    } else {
+                        // 单独的数字
+                        const num = parseInt(range);
+                        if (!isNaN(num)) specificNumbers.push(num);
+                    }
+                });
+                
+                // 去重
+                specificNumbers = [...new Set(specificNumbers)];
+            }
+            
+            // 筛选数字
+            let filteredNumbers = numberData.filter(item => {
+                // 数字格式化为两位数
+                const numStr = item.num < 10 ? '0' + item.num : item.num.toString();
+                const head = numStr.charAt(0);
+                const tail = numStr.charAt(1);
+                
+                // 头部过滤
+                if (headValues.length > 0 && !headValues.includes(head)) {
+                    return false;
+                }
+                
+                // 尾部过滤
+                if (tailValues.length > 0 && !tailValues.includes(tail)) {
+                    return false;
+                }
+                
+                // 单双数过滤
+                if (oddEvenValue && oddEvenValue !== 'all' && item.oddEven !== oddEvenValue) {
+                    return false;
+                }
+                
+                // 大小过滤
+                if (sizeValue && sizeValue !== 'all' && item.size !== sizeValue) {
+                    return false;
+                }
+                
+                // 颜色过滤
+                if (selectedColors.length > 0 && !selectedColors.includes(item.color)) {
+                    return false;
+                }
+                
+                // 生肖过滤
+                if (selectedAnimals.length > 0 && !selectedAnimals.includes(item.animal)) {
+                    return false;
+                }
+                
+                // 五行过滤
+                if (selectedElements.length > 0 && !selectedElements.includes(item.element)) {
+                    return false;
+                }
+                
+                // 排除特定数字
+                if (excludeValues.length > 0 && excludeValues.includes(item.num.toString())) {
+                    return false;
+                }
+                
+                // 特定数字集过滤
+                if (specificNumbers.length > 0 && !specificNumbers.includes(item.num)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // 按数字从小到大排序
+            filteredNumbers.sort((a, b) => a.num - b.num);
+            
+            // 显示结果
+            displayResults(filteredNumbers);
+            updateDebugInfo(`筛选完成，匹配 ${filteredNumbers.length} 个数字`);
+        }
+
+        // 解析输入（支持逗号、空格分隔或直接连续数字）
+        function parseInput(input, digitOnly = false) {
+            if (digitOnly) {
+                // 处理连续数字输入（如："123" 转为 ["1", "2", "3"]）
+                return input.split('')
+                    .filter(char => char >= '0' && char <= '9')
+                    .map(item => item.trim())
+                    .filter(item => item !== '');
+            }
+            
+            return input.split(/[,，\s]+/)
+                .map(item => item.trim())
+                .filter(item => item !== '');
+        }
+
+        // 显示结果
+        function displayResults(results) {
+            const resultsGrid = document.getElementById('results-grid');
+            resultsGrid.innerHTML = '';
+            
+            // 统计
+            const redCount = results.filter(item => item.color === '红').length;
+            const greenCount = results.filter(item => item.color === '绿').length;
+            const blueCount = results.filter(item => item.color === '蓝').length;
+            
+            document.getElementById('total-count').textContent = results.length;
+            document.getElementById('red-count').textContent = redCount;
+            document.getElementById('green-count').textContent = greenCount;
+            document.getElementById('blue-count').textContent = blueCount;
+            
+            // 显示结果项
+            results.forEach(item => {
+                const numStr = item.num < 10 ? '0' + item.num : item.num.toString();
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${item.color === '红' ? 'red' : item.color === '绿' ? 'green' : 'blue'}`;
+                
+                resultItem.innerHTML = `
+                    ${numStr}
+                    <div class="zodiac">${item.animal}</div>
+                `;
+                
+                resultsGrid.appendChild(resultItem);
+            });
+        }
+        
+        // 复制筛选结果
+        function copyResults() {
+            const resultItems = document.querySelectorAll('.result-item');
+            if (resultItems.length === 0) {
+                updateDebugInfo("没有可复制的筛选结果");
+                return;
+            }
+            
+            const resultNumbers = Array.from(resultItems).map(item => item.textContent.replace(/\s+/g, '')).join(', ');
+            
+            // 创建临时textarea进行复制
+            const textArea = document.createElement('textarea');
+            textArea.value = resultNumbers;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            updateDebugInfo(`已复制 ${resultItems.length} 个数字到剪贴板`);
+            alert(`复制成功！已复制 ${resultItems.length} 个数字到剪贴板`);
+        }
+
+        // 重置筛选
+        function resetFilters(silent = false) {
+            if (!silent) updateDebugInfo("重置所有筛选条件");
+            
+            // 清除输入框
+            document.getElementById('head-input').value = '';
+            document.getElementById('tail-input').value = '';
+            document.getElementById('exclude-input').value = '';
+            document.getElementById('specific-input').value = '';
+            
+            // 清除所有选择
+            document.querySelectorAll('.option-btn.selected').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 重置单双数和大小选择
+            document.querySelector('.odd-even-filter .option-btn[data-value="单"]').classList.remove('selected');
+            document.querySelector('.size-filter .option-btn[data-value="小"]').classList.remove('selected');
+            
+            // 默认选择单数
+            
+            
+            // 重置结果
+            displayResults([]);
+            
+            if (!silent) {
+                // 重新设置默认值以便测试
+                setTimeout(() => {
+                    setDefaultFilters();
+                    updateDebugInfo("已重置为默认筛选条件");
+                }, 300);
+            }
+        }
+
+        // 初始化页面
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
